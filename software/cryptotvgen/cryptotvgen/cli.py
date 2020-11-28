@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from .generator import gen_dataset, gen_hash, gen_random, gen_single, gen_test_combined, \
-         gen_test_routine, print_header, gen_benchmark_routine, gen_tv_and_write_files
+         gen_test_routine, print_header, gen_benchmark_routine, gen_tv_and_write_files, determine_params
 from .options import get_parser
 from .prepare_libs import prepare_libs
 import textwrap
@@ -34,6 +34,9 @@ def run_cryptotvgen(args=sys.argv[1:]):
 
                     ''')
         sys.exit(error_txt)
+
+    # Update parameters based on api.h
+    determine_params(opts)
         
     # Additional error checking
     opts.msg_format = list(opts.msg_format)

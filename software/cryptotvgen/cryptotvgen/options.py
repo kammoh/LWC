@@ -441,8 +441,7 @@ def get_parser():
             '''))
 
     test.add_argument(
-        '--gen_custom', type=str,
-        metavar=('Array'), action=ValidateGenCustom,
+        '--gen_custom', type=str, metavar=('<parameters[:parameters]*>'), action=ValidateGenCustom,
         help=textwrap.dedent('''\
             Randomly generate multiple test vectors, with each test vector
             specified using the following fields:
@@ -707,22 +706,22 @@ def get_parser():
         metavar=('PUBLIC_PORTS_WIDTH', 'SECRET_PORT_WIDTH'),
         help='Size of PDI/DO and SDI port in bits.')
     impops.add_argument(
-        '--key_size', type=int, default=128, metavar='BITS',
+        '--key_size', type=int, default=None, metavar='BITS',
         help='Size of key in bits')
     impops.add_argument(
-        '--npub_size', type=int, default=128, metavar='BITS',
+        '--npub_size', type=int, default=None, metavar='BITS',
         help='Size of public message number in bits')
     impops.add_argument(
-        '--nsec_size', type=int, default=0, metavar='BITS',
+        '--nsec_size', type=int, default=None, metavar='BITS',
         help='Size of secret message number in bits')
     impops.add_argument(
-        '--tag_size', type=int, default=128, metavar='BITS',
+        '--tag_size', type=int, default=None, metavar='BITS',
         help='Size of authentication tag in bits')
     impops.add_argument(
-        '--message_digest_size', type=int, default=64, metavar='BITS',
+        '--message_digest_size', type=int, default=None, metavar='BITS',
         help='Size of message digest (hash_tag) in bits')
     impops.add_argument(
-        '--block_size', type=int, default=128, metavar='BITS',
+        '--block_size', type=int, default=None, metavar='BITS',
         help='''Algorithm's data block size''')
     impops.add_argument(
         '--block_size_ad', type=int, metavar='BITS',
@@ -853,7 +852,7 @@ def get_parser():
         '--max_d', type=int, default=1000, metavar='BYTES',
         help='Maximum randomly generated data length')
     tvops.add_argument(
-        '--max_block_per_sgmt', type=int, default=9999, metavar='COUNT',
+        '--max_block_per_sgmt', type=int, default=None, metavar='COUNT',
         help='Maximum data block per segment (based on --block_size) parameter')
     tvops.add_argument(
         '--max_io_per_line', type=int, default=9999, metavar='COUNT',

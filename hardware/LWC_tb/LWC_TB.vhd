@@ -148,7 +148,7 @@ architecture behavior of LWC_TB is
         );
     end component LWC;
     
-    -- for all: LWC use entity work.LWC_wrapper;
+    for all: LWC use entity work.LWC_wrapper;
     
 begin
 
@@ -189,10 +189,11 @@ begin
 
     genRst: process
     begin
-        seed(123);
         report LF & " -- Testvectors:  " & G_FNAME_PDI & " " & G_FNAME_SDI & " " & G_FNAME_DO & LF &
-                    " -- Test Mode:    " & integer'image(G_TEST_MODE) & LF &
-                    " -- Clock Period: " & integer'image(G_PERIOD_PS) & " ps" & LF & CR severity note;
+        " -- Test Mode:    " & integer'image(G_TEST_MODE) & LF &
+        " -- Clock Period: " & integer'image(G_PERIOD_PS) & " ps" & LF & CR severity note;
+
+        seed(123);
         wait for 100 ns; -- Xilinx GSR takes 100ns, required for post-synth simulation
         if ASYNC_RSTN then
             rst <= '0'; -- @suppress "Dead code"

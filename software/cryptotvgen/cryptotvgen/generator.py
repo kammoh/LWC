@@ -389,8 +389,8 @@ class TestVector(object):
         self.decrypt = op
         # Input
         self.key     = key
-        self.npub    = npub[:int(2*self.opts.npub_size/8)]
-        self.nsec_pt = nsec_pt[:int(2*self.opts.nsec_size/8)]
+        self.npub    = npub[:2*self.opts.npub_size//8]
+        self.nsec_pt = nsec_pt[:2*self.opts.nsec_size//8]
         self.ad      = ad
         self.pt      = pt
         self.partial = 0
@@ -400,7 +400,7 @@ class TestVector(object):
         self.tag = ''
         self.hash = pt
         self.hash_tag = ''
-        self.hash_tag_size = self.opts.message_digest_size/8
+        self.hash_tag_size = self.opts.message_digest_size // 8 if self.opts.message_digest_size is not None else None
 
     def aead_encrypt(self):
         ''' Compute aead algorithm '''
@@ -599,7 +599,7 @@ class TestVector(object):
                                        lenbytes(self.ct),
                                        self.decrypt,
                                        self.hashop,
-                                       int(self.hash_tag_size))
+                                       self.hash_tag_size)
             f.write('{}'.format(txt))
 
             if (not ofile):
@@ -635,19 +635,19 @@ class TestVector(object):
                 data = self.get_data(sgt)
 
                 # Sub-segment
-                max_sgmt = (self.opts.block_size/8)*self.opts.max_block_per_sgmt
-                tot_sgmt = int(math.ceil(lenbytes(data)/max_sgmt))
-                if (sgt in ['tag', 'hash_tag']):    # No segment split for tag/hash_tag
-                    tot_sgmt = 1
-                tot_sgmt = 1 if tot_sgmt == 0 else tot_sgmt
+                tot_sgmt = 1
+                max_sgmt = 0
+                # No segment split for tag/hash_tag
+                if sgt not in ['tag', 'hash_tag'] and self.opts.max_block_per_sgmt and self.opts.block_size:
+                    max_sgmt = (self.opts.block_size//8) * self.opts.max_block_per_sgmt
+                    tot_sgmt = max(1, int(math.ceil(lenbytes(data)/max_sgmt)))
 
-                (is_eoi, is_eot, is_lst) = (0,0,0)
+                is_eoi, is_eot, is_lst = (0,0,0)
                 for j in range(tot_sgmt):
                     begin = int(j*max_sgmt*2)
                     end = begin + int(max_sgmt*2)
                     if j == tot_sgmt-1:
-                        is_eoi = \
-                            int(self.is_last_vld_segment(sgt, msg_format))
+                        is_eoi = int(self.is_last_vld_segment(sgt, msg_format))
                         if (self.hashop and ofile):
                             is_lst = 1 if i == len(msg_format)-2 else 0
                         else:
@@ -952,16 +952,16 @@ def gen_dataset(opts, routine, start_msg_no, start_key_no, mode=0):
             data = get_running_value(tv[3])
 
         elif mode == 1:
-            key  = '55'*int(opts.key_size/8)
-            npub = 'B0'*int(opts.npub_size/8)
-            nsec = '66'*int(opts.nsec_size/8)
+            key  = '55' * (opts.key_size//8)
+            npub = 'B0' * (opts.npub_size//8)
+            nsec = '66' * (opts.nsec_size//8)
             ad   = 'A0'*tv[2]
             data = 'FF'*tv[3]
 
         else:
-            key  = gen_data(int(opts.key_size/8),   mode, '55')
-            npub = gen_data(int(opts.npub_size/8),  mode, 'B0')
-            nsec = gen_data(int(opts.nsec_size/8),  mode, '66')
+            key  = gen_data(opts.key_size // 8,   mode, '55')
+            npub = gen_data(opts.npub_size // 8,  mode, 'B0')
+            nsec = gen_data(opts.nsec_size // 8,  mode, '66')
             ad   = gen_data(tv[2],          mode, 'A0')
             data = gen_data(tv[3],          mode, 'FF')
 
@@ -1146,36 +1146,36 @@ def gen_tv_and_write_files(opts, dataset):
 
 
 def determine_params(opts):
-    '''This untility function will read in the parameters of the reference
+    '''This utility function will read in the parameters of the reference
     implementation api.h file and update the opts dict
     '''
-    algo_api_h = ctgen_get_supercop_dir() / 'crypto_aead' / opts.aead / "ref/api.h"
-    if not os.path.exists(algo_api_h):
-        sys.exit(f"{algo_api_h} does not exist. Ensure --aead is correct")
-    with open(algo_api_h, 'r') as f:
-        api_h = f.read()
-    log.debug(api_h)
-    for line in api_h.splitlines():
-        if "KEYBYTES" in line:
-            opts.key_size = 8 * int(line.split()[-1])
-        elif "NPUBBYTES" in line:
-            opts.npub_size = 8 * int(line.split()[-1])
-        elif "NSECBYTES" in line:
-            opts.nsec_size = 8 * int(line.split()[-1])
-        elif "NSECBYTES" in line:
-            opts.nsec_size = 8 * int(line.split()[-1])
-        elif "CRYPTO_ABYTES" in line:
-            opts.tag_size = 8 * int(line.split()[-1])
-    if opts.hash:
-        algo_hash_api_h = ctgen_get_supercop_dir() / 'crypto_hash' / opts.hash / "ref/api.h"
-        if not os.path.exists(algo_hash_api_h):
-            sys.exit(f"{algo_hash_api_h} did not exists. Ensure --hash is correct")
-        with open(algo_hash_api_h, 'r') as f:
-            hash_api_h = f.read()
-        log.debug(hash_api_h)
-        for line in hash_api_h.splitlines():
-            if "CRYPTO_BYTES" in line:
-                opts.message_digest_size = 8 * int(line.split()[-1])
+    api_map = {"CRYPTO_KEYBYTES": 'key_size', "CRYPTO_NPUBBYTES": 'npub_size', "CRYPTO_NSECBYTES": 'nsec_size', "CRYPTO_NSECBYTES": 'nsec_size', 
+        "CRYPTO_ABYTES": 'tag_size', "CRYPTO_BYTES": 'message_digest_size'
+        }
+    opts = vars(opts)
+    for op in ['aead', 'hash']:
+        alg = opts.get(op)
+        if not alg:
+            continue
+        algo_api_h = ctgen_get_supercop_dir() / f'crypto_{op}' / alg / "ref/api.h"
+        if not os.path.exists(algo_api_h):
+            log.warning(f"{algo_api_h} does not exist. Ensure --aead and/or --candidates_dir/--libs_dir are correct.")
+            return
+
+        with open(algo_api_h, 'r') as f:
+            api_h = f.read()
+
+        for line in api_h.splitlines():
+            splitted_line = line.split()
+            splitted_line = line.split()
+            if len(splitted_line) == 3 and splitted_line[0] == '#define':
+                k,v = splitted_line[1:]
+                opt_attr = api_map.get(k)
+                if opt_attr:
+                    if opts[opt_attr] is None:
+                        v = int(v)*8
+                        log.info(f'From {algo_api_h}: determined {opt_attr} to be {v} bits')
+                        opts[opt_attr] = v
 
 def blanket_message_hash_test(block_size_msg_digest):
     routine = []
@@ -1227,8 +1227,6 @@ def gen_benchmark_routine(opts):
         sys.exit("If --hash algorithm is desired --block_size_msg_digest is required")
     log.debug(f"original options \n{opts}\n")
 
-    # Update parameters based on api.h
-    determine_params(opts)
     orig_dest=opts.dest
     if opts.hash:
         data = gen_dataset(opts, blanket_message_hash_test(opts.block_size_msg_digest), 1, 1)
