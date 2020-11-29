@@ -934,6 +934,7 @@ def gen_dataset(opts, routine, start_msg_no, start_key_no, mode=0):
         return "".join(a)
 
     # print(routine)
+    assert opts.key_size and opts.npub_size is not None and opts.nsec_size is not None, "key_size npub_size nsec_size should be set"
     for i, tv in enumerate(routine):
         hashop = tv[4]
 
@@ -945,9 +946,9 @@ def gen_dataset(opts, routine, start_msg_no, start_key_no, mode=0):
             decrypt = tv[1]
 
         if mode == 2:
-            key  = get_running_value(opts.key_size/8)
-            npub = get_running_value(opts.npub_size/8)
-            nsec = get_running_value(opts.nsec_size/8)
+            key  = get_running_value(opts.key_size//8)
+            npub = get_running_value(opts.npub_size//8)
+            nsec = get_running_value(opts.nsec_size//8)
             ad   = get_running_value(tv[2])
             data = get_running_value(tv[3])
 
@@ -1152,17 +1153,18 @@ def determine_params(opts):
     api_map = {"CRYPTO_KEYBYTES": 'key_size', "CRYPTO_NPUBBYTES": 'npub_size', "CRYPTO_NSECBYTES": 'nsec_size', "CRYPTO_NSECBYTES": 'nsec_size', 
         "CRYPTO_ABYTES": 'tag_size', "CRYPTO_BYTES": 'message_digest_size'
         }
+    log.warning('Determining parameters automatically from api.h header files')
     opts = vars(opts)
     for op in ['aead', 'hash']:
         alg = opts.get(op)
         if not alg:
             continue
-        algo_api_h = ctgen_get_supercop_dir() / f'crypto_{op}' / alg / "ref/api.h"
-        if not os.path.exists(algo_api_h):
-            log.warning(f"{algo_api_h} does not exist. Ensure --aead and/or --candidates_dir/--libs_dir are correct.")
+        api_h = ctgen_get_supercop_dir() / f'crypto_{op}' / alg / "ref" / "api.h"
+        if not os.path.exists(api_h):
+            log.warning(f"{api_h} does not exist. Ensure --aead and/or --candidates_dir/--libs_dir are correct.")
             return
 
-        with open(algo_api_h, 'r') as f:
+        with open(api_h, 'r') as f:
             api_h = f.read()
 
         for line in api_h.splitlines():
@@ -1174,7 +1176,7 @@ def determine_params(opts):
                 if opt_attr:
                     if opts[opt_attr] is None:
                         v = int(v)*8
-                        log.info(f'From {algo_api_h}: determined {opt_attr} to be {v} bits')
+                        log.info(f'From {api_h}: determined {opt_attr} to be {v} bits')
                         opts[opt_attr] = v
 
 def blanket_message_hash_test(block_size_msg_digest):
@@ -1311,7 +1313,7 @@ def gen_benchmark_routine(opts):
     print(f'Generated: {os.path.abspath(opts.dest)}')
 
     # Ensure new key
-    routine_new_key = [[True, False, 0,0, False]]
+    routine_new_key = [[True, False, 0, 0, False]]
     routine_new_key += basic_aead_sizes(True, False, opts.block_size_ad, opts.block_size)
     routine_new_key += basic_aead_sizes(True, True, opts.block_size_ad, opts.block_size)
     data_enc = gen_dataset(opts, routine_new_key, 1, 1)
