@@ -81,7 +81,7 @@ architecture structure of LWC is
     signal end_of_block_cipher_out  : std_logic;
     -- signal bdo_size_cipher_out      : std_logic_vector(3       -1 downto 0);
     signal bdo_valid_bytes_cipher_out:std_logic_vector(CCWdiv8 -1 downto 0);
---    signal bdo_type_cipher_out      :std_logic_vector(4        -1 downto 0);
+    signal bdo_type_cipher_out      :std_logic_vector(4        -1 downto 0);
     -- signal decrypt_cipher_out       : std_logic;
     signal msg_auth_valid           : std_logic;
     signal msg_auth_ready           : std_logic;
@@ -101,46 +101,38 @@ architecture structure of LWC is
     signal cmd_valid_FIFO_out       : std_logic;
     signal cmd_ready_FIFO_out       : std_logic;
     
-        
-    signal do_data_i    : std_logic_vector(W-1 downto 0);
-    signal do_valid_i   : std_logic;
-    signal do_last_i    : std_logic;
-    signal do_ready_i   : std_logic;
-
-    
     --==========================================================================
     
     component CryptoCore
-    	port(
-    		clk             : in  STD_LOGIC;
-    		rst             : in  STD_LOGIC;
-    		key             : in  STD_LOGIC_VECTOR(CCSW - 1 downto 0);
-    		key_valid       : in  STD_LOGIC;
-    		key_ready       : out STD_LOGIC;
-    		bdi             : in  STD_LOGIC_VECTOR(CCW - 1 downto 0);
-    		bdi_valid       : in  STD_LOGIC;
-    		bdi_ready       : out STD_LOGIC;
-    		bdi_pad_loc     : in  STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
-    		bdi_valid_bytes : in  STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
-    		bdi_size        : in  STD_LOGIC_VECTOR(3 - 1 downto 0);
-    		bdi_eot         : in  STD_LOGIC;
-    		bdi_eoi         : in  STD_LOGIC;
-    		bdi_type        : in  STD_LOGIC_VECTOR(4 - 1 downto 0);
-    		decrypt_in      : in  STD_LOGIC;
-    		key_update      : in  STD_LOGIC;
-    		hash_in         : in  std_logic;
-    		bdo             : out STD_LOGIC_VECTOR(CCW - 1 downto 0);
-    		bdo_valid       : out STD_LOGIC;
-    		bdo_ready       : in  STD_LOGIC;
-    		bdo_type        : out STD_LOGIC_VECTOR(4 - 1 downto 0);
-    		bdo_valid_bytes : out STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
-    		end_of_block    : out STD_LOGIC;
-    		msg_auth_valid  : out STD_LOGIC;
-    		msg_auth_ready  : in  STD_LOGIC;
-    		msg_auth        : out STD_LOGIC
-    	);
+        port(
+            clk             : in  STD_LOGIC;
+            rst             : in  STD_LOGIC;
+            key             : in  STD_LOGIC_VECTOR(CCSW - 1 downto 0);
+            key_valid       : in  STD_LOGIC;
+            key_ready       : out STD_LOGIC;
+            bdi             : in  STD_LOGIC_VECTOR(CCW - 1 downto 0);
+            bdi_valid       : in  STD_LOGIC;
+            bdi_ready       : out STD_LOGIC;
+            bdi_pad_loc     : in  STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
+            bdi_valid_bytes : in  STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
+            bdi_size        : in  STD_LOGIC_VECTOR(3 - 1 downto 0);
+            bdi_eot         : in  STD_LOGIC;
+            bdi_eoi         : in  STD_LOGIC;
+            bdi_type        : in  STD_LOGIC_VECTOR(4 - 1 downto 0);
+            decrypt_in      : in  STD_LOGIC;
+            key_update      : in  STD_LOGIC;
+            hash_in         : in  std_logic;
+            bdo             : out STD_LOGIC_VECTOR(CCW - 1 downto 0);
+            bdo_valid       : out STD_LOGIC;
+            bdo_ready       : in  STD_LOGIC;
+            bdo_type        : out STD_LOGIC_VECTOR(4 - 1 downto 0);
+            bdo_valid_bytes : out STD_LOGIC_VECTOR(CCWdiv8 - 1 downto 0);
+            end_of_block    : out STD_LOGIC;
+            msg_auth_valid  : out STD_LOGIC;
+            msg_auth_ready  : in  STD_LOGIC;
+            msg_auth        : out STD_LOGIC
+        );
     end component CryptoCore;
-
 begin
 
 	-- Width parameters sanity checks
@@ -222,6 +214,7 @@ begin
                 bdo             => bdo_cipher_out,
                 bdo_valid       => bdo_valid_cipher_out,
                 bdo_ready       => bdo_ready_cipher_out,
+                bdo_type        => bdo_type_cipher_out,
                 bdo_valid_bytes => bdo_valid_bytes_cipher_out,
                 end_of_block    => end_of_block_cipher_out,
                 msg_auth_valid  => msg_auth_valid,
@@ -240,6 +233,7 @@ begin
                 bdo_valid       => bdo_valid_cipher_out,
                 bdo_ready       => bdo_ready_cipher_out,
                 end_of_block    => end_of_block_cipher_out,
+                bdo_type        => bdo_type_cipher_out,
                 bdo_valid_bytes => bdo_valid_bytes_cipher_out,
                 msg_auth        => msg_auth,
                 msg_auth_ready  => msg_auth_ready,
@@ -247,10 +241,10 @@ begin
                 cmd             => cmd_FIFO_out,
                 cmd_valid       => cmd_valid_FIFO_out,
                 cmd_ready       => cmd_ready_FIFO_out,
-                do_data         => do_data_i,
-                do_valid        => do_valid_i,
-                do_last         => do_last_i,
-                do_ready        => do_ready_i
+                do_data         => do_data,
+                do_valid        => do_valid,
+                do_last         => do_last,
+                do_ready        => do_ready
             );
     Inst_Header_Fifo: entity work.fwft_fifo(structure)
         generic map (
@@ -267,54 +261,5 @@ begin
                 dout_valid      => cmd_valid_FIFO_out,
                 dout_ready      => cmd_ready_FIFO_out
             );
-
-    do_data  <= do_data_i;
-    do_last  <= do_last_i;
-    do_valid <= do_valid_i;
-    do_ready_i <= do_ready;
     
-    
-    
-    -- Inst_Elastic_Reg: entity work.elastic_reg_fifo
-    --     generic map (
-    --         W => W + 1
-    --         )
-    --     port map (
-    --         clk       => clk,
-    --         reset     => rst,
-    --         in_data   => do_datalast_i,
-    --         in_valid  => do_valid_i,
-    --         in_ready  => do_ready_i,
-    --         out_data  => do_datalast_o,
-    --         out_valid => do_valid,
-    --         out_ready => do_ready
-    --     );
-
-
-    -- -- TODO for ASYNC_RSTN
-    -- name : process (clk) is
-    -- begin
-    --     if rising_edge(clk) then
-    --         if rst = '1' then
-    --             do_valid_reg <= '0';
-    --         else
-    --             if do_valid_i = '1' and do_ready_i = '1' then
-    --                 do_data_reg  <= do_data_i;
-    --                 do_valid_reg <= '1';
-    --                 do_last_reg  <= do_last_i;
-    --             elsif do_ready = '1' then
-    --                 do_valid_reg <= '0';
-    --             end if;
-                
-    --         end if;
-    --     end if;
-    -- end process name;
-    
-    -- do_data  <= do_data_reg;
-    -- do_valid <= do_valid_reg;
-    -- do_last  <= do_last_reg;
-    
-    -- do_ready_i <= do_ready or not do_valid_reg;
-    
-
 end structure;

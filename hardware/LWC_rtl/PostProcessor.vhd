@@ -51,7 +51,7 @@ entity PostProcessor is
             bdo_valid       : in  std_logic;
             bdo_ready       : out std_logic;
             end_of_block    : in  std_logic;
---            bdo_type        : in  std_logic_vector(3 downto 0); -- not used atm
+            bdo_type        : in  std_logic_vector(3 downto 0); -- not used atm
             bdo_valid_bytes : in  std_logic_vector(CCWdiv8-1 downto 0);
             msg_auth        : in  std_logic;
             msg_auth_ready  : out std_logic;
@@ -386,7 +386,7 @@ FSM_32BIT: if (G_W=32) generate
     
                 --MSG
                 when S_HDR_MSG =>
-                    cmd_ready_internal          <= do_ready;
+                    cmd_ready_internal <= do_ready;
                     len_SegLenCnt      <= do_ready and cmd_valid;
                     do_valid_internal  <= cmd_valid;
                     -- preserve EOT flag to support multi segment MSGs
