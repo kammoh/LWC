@@ -24,7 +24,6 @@ use std.textio.all;
 use work.LWC_TB_pkg.all;
 use work.NIST_LWAPI_pkg.all;
 
-
 entity LWC_TB IS
     generic (
         G_MAX_FAILURES      : integer := 100;
@@ -45,7 +44,7 @@ entity LWC_TB IS
     );
 end LWC_TB;
 
-architecture behavior of LWC_TB is
+architecture TB of LWC_TB is
     ------------- timing constants ------------------
     constant clk_period         : time := G_PERIOD_PS * ps;
     constant input_delay        : time := 0 ns; -- clk_period / 2; --
@@ -147,8 +146,8 @@ architecture behavior of LWC_TB is
             do_last   : out std_logic
         );
     end component LWC;
-    
-    for all: LWC use entity work.LWC_wrapper;
+
+    -- for all: LWC use entity work.LWC_wrapper;
     
 begin
 
@@ -190,8 +189,9 @@ begin
     genRst: process
     begin
         report LF & " -- Testvectors:  " & G_FNAME_PDI & " " & G_FNAME_SDI & " " & G_FNAME_DO & LF &
+        " -- Clock Period: " & integer'image(G_PERIOD_PS) & " ps" & LF &
         " -- Test Mode:    " & integer'image(G_TEST_MODE) & LF &
-        " -- Clock Period: " & integer'image(G_PERIOD_PS) & " ps" & LF & CR severity note;
+        " -- Max Failures: " & integer'image(G_MAX_FAILURES) & LF & CR severity note;
 
         seed(123);
         wait for 100 ns; -- Xilinx GSR takes 100ns, required for post-synth simulation
@@ -320,7 +320,7 @@ begin
             file_open(do_file, G_FNAME_DO, read_mode); -- reset the file pointer
         end if;
         wait until rising_edge(clk);
-        while not endfile(do_file) loop
+        while not endfile(do_file) and not force_exit loop
             readline(do_file, line_data);
             line_no := line_no + 1;
             read(line_data, temp_read, read_result);
@@ -801,4 +801,4 @@ begin
             wait;
         end if;
     end process;
-end;
+end architecture;

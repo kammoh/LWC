@@ -35,6 +35,8 @@ architecture RTL of LWC_wrapper is
     signal do_datalast_i : std_logic_vector(W downto 0);
     signal do_datalast_o : std_logic_vector(W downto 0);
 begin
+
+    assert False report "Using LWC_wrapper" severity warning;
     
     LWC_inst : entity work.LWC
         port map(
