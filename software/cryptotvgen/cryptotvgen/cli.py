@@ -12,7 +12,6 @@ import errno
 import pathlib
 
 
-
 ## validation can only be safely done when all args are parsed and stored!
 
 def run_cryptotvgen(args=sys.argv[1:]):

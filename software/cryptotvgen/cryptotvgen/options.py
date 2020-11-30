@@ -87,7 +87,7 @@ class ValidateCandidatesDir(argparse.Action):
         super(ValidateCandidatesDir, self).__init__(option_strings, dest, nargs, **kwargs)
 
     def __call__(self, parser, namespace, value, option_string=None):
-        value = pathlib.Path(value).resolve()
+        value = pathlib.Path(value)
         if not (value.exists() and value.is_dir()):
             sys.exit(f"candidate_dir {value} does not exist or is not a directory!")
         setattr(namespace, self.dest, value)

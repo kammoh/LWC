@@ -1159,15 +1159,21 @@ def determine_params(opts):
         alg = opts.get(op)
         if not alg:
             continue
-        api_h = ctgen_get_supercop_dir() / f'crypto_{op}' / alg / "ref" / "api.h"
+        api_h_files = list((ctgen_get_supercop_dir() / f'crypto_{op}' / alg).glob('**/api.h'))
+        if not api_h_files or len(api_h_files) < 1:
+            log.warning("No api.h files found in the implementation directory. Make sure --aead and/or --candidates_dir/--libs_dir are correct.")
+            return
+        if len(api_h_files) > 1:
+            log.warning("multiple api.h files found in the implementation folder.")
+        api_h = api_h_files[0]
         if not os.path.exists(api_h):
             log.warning(f"{api_h} does not exist. Ensure --aead and/or --candidates_dir/--libs_dir are correct.")
             return
 
         with open(api_h, 'r') as f:
-            api_h = f.read()
+            api_h_content = f.read()
 
-        for line in api_h.splitlines():
+        for line in api_h_content.splitlines():
             splitted_line = line.split()
             splitted_line = line.split()
             if len(splitted_line) == 3 and splitted_line[0] == '#define':
