@@ -1175,9 +1175,8 @@ def determine_params(opts):
 
         for line in api_h_content.splitlines():
             splitted_line = line.split()
-            splitted_line = line.split()
-            if len(splitted_line) == 3 and splitted_line[0] == '#define':
-                k,v = splitted_line[1:]
+            if len(splitted_line) >= 3 and splitted_line[0] == '#define':
+                k,v = splitted_line[1:3]
                 opt_attr = api_map.get(k)
                 if opt_attr:
                     if opts[opt_attr] is None:

@@ -86,8 +86,8 @@ def prepare_libs(sc_version, libs, candidates_dir, lib_path):
                 src_path = Path(candidates_dir) / ('crypto_' + vtype) / vname / src_dir
                 print(f'building sources in {src_path}')
                 if src_path.exists() and src_path.is_dir():
-                    cmd = ['make', '-f',  str(ctgen_mkfile / mkfile_name), '-C', str(candidates_dir),
-                        f'CRYPTO_VARIANT={vname}', f'CRYPTO_TYPE={vtype}', f'CANDIDATE_PATH={candidates_dir}',
+                    cmd = ['make', '-f',  str(ctgen_mkfile / mkfile_name),
+                        f'CRYPTO_VARIANT={vname}', f'CRYPTO_TYPE={vtype}', 'CANDIDATE_PATH=.',
                         f'IMPL_SRC_DIR={src_dir}']
                     if lib_path:
                         print(f"binaries will be available in lib_path={lib_path}")
@@ -190,14 +190,14 @@ def prepare_libs(sc_version, libs, candidates_dir, lib_path):
                 for sub in dir_iter:
                     print(f'sub={sub}')
                     if sub.is_dir():
-                        impl = sub / impl_src_dirs
-                        vname = sub.name
-                        if impl.exists() and impl.is_dir():
-                            print(f"found variant:{vname} ({crypto_type})")
-                            variants.add((vname, crypto_type))
-                sys.exit(1)
+                        for impl_dir in impl_src_dirs:
+                            impl = sub / impl_dir
+                            if impl.exists() and impl.is_dir():
+                                vname = sub.name
+                                print(f"found variant:{vname} ({crypto_type})")
+                                variants.add((vname, crypto_type))
             except FileNotFoundError as e:
-                sys.exit(f"{e}\ncandidates_dir={candidates_dir} does not have a crypto_{crypto_type}/{impl_src_dirs} sub directory!\n")
+                print(f"{e}\ncandidates_dir={candidates_dir} does not have a crypto_{crypto_type}/{impl_src_dirs} sub directory!\n")
 
     variants = filter_variants(variants)
 
