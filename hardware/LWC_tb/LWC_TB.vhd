@@ -85,14 +85,6 @@ architecture TB of LWC_TB is
     signal do_ready             : std_logic := '0';
     signal do_ready_delayed     : std_logic := '0';
 
-    --! fdi/o
-    signal fdi_data             : std_logic_vector(W-1 downto 0);
-    signal fdo_data             : std_logic_vector(W-1 downto 0);
-    signal fdi_valid            : std_logic;
-    signal fdo_valid            : std_logic;
-    signal fdi_ready            : std_logic;
-    signal fdo_ready            : std_logic;
-
     --! Verification signals
     signal stall_msg            : std_logic := '0';
     

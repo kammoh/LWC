@@ -5,6 +5,9 @@ use work.NIST_LWAPI_pkg.all;
 use work.LWC_TB_pkg.all;
 
 entity LWC_TB_2pass_wrapper_uut is
+    generic (
+        MAX_SEGMENT_BYTES: integer := 16 * 1024
+    );
     port (
         clk             : in  std_logic;
         rst             : in  std_logic;
@@ -22,6 +25,7 @@ entity LWC_TB_2pass_wrapper_uut is
 end entity;
 
 architecture structural of LWC_TB_2pass_wrapper_uut is
+
     --! fdi/o
     signal fdi_data             : std_logic_vector(W-1 downto 0);
     signal fdo_data             : std_logic_vector(W-1 downto 0);
@@ -54,7 +58,7 @@ architecture structural of LWC_TB_2pass_wrapper_uut is
     end component;
 begin
 
-    assert False report "Using LWC_wrapper" severity warning;
+    assert False report "Using LWC_2pass+wrapper with G_MAX_SEGMENT_BYTES=" & integer'image(G_MAX_SEGMENT_BYTES) severity warning;
     
     uut: LWC_2pass_wrapper
         port map(
@@ -81,7 +85,7 @@ begin
     twoPassfifo : entity work.fwft_fifo_tb
         generic map(
             G_W              => W,
-            G_LOG2DEPTH      => log2_ceil(8*1024/(W/8)) -- 8K max message FIXME set as generic/pkg constant
+            G_LOG2DEPTH      => log2_ceil(8*MAX_SEGMENT_BYTES/W)
         )
         port map(
             clk              => clk,

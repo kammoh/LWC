@@ -2,8 +2,12 @@ library ieee;
 use ieee.std_logic_1164.all;
 
 use work.NIST_LWAPI_pkg.all;
+use work.LWC_TB_pkg.all;
 
 entity LWC_TB_2pass_uut is
+    generic (
+          G_MAX_SEGMENT_BYTES : integer := 16 * 1024
+    );
     port (
         clk             : in  std_logic;
         rst             : in  std_logic;
@@ -21,6 +25,7 @@ entity LWC_TB_2pass_uut is
 end entity;
 
 architecture structural of LWC_TB_2pass_uut is
+
     --! fdi/o
     signal fdi_data             : std_logic_vector(W-1 downto 0);
     signal fdo_data             : std_logic_vector(W-1 downto 0);
@@ -53,20 +58,20 @@ architecture structural of LWC_TB_2pass_uut is
     end component;
 begin
 
-    assert False report "Using LWC_wrapper" severity warning;
+    assert False report "Using LWC_2pass with G_MAX_SEGMENT_BYTES=" & integer'image(G_MAX_SEGMENT_BYTES) severity warning;
     
     uut: LWC_2pass
         port map(
             clk          => clk,
             rst          => rst,
-            pdi_data     => pdi_data_delayed,
-            pdi_valid    => pdi_valid_delayed,
+            pdi_data     => pdi_data,
+            pdi_valid    => pdi_valid,
             pdi_ready    => pdi_ready,
-            sdi_data     => sdi_data_delayed,
-            sdi_valid    => sdi_valid_delayed,
+            sdi_data     => sdi_data,
+            sdi_valid    => sdi_valid,
             sdi_ready    => sdi_ready,
             do_data      => do_data,
-            do_ready     => do_ready_delayed,
+            do_ready     => do_ready,
             do_valid     => do_valid,
             do_last      => do_last,
             fdi_data     => fdi_data,
@@ -80,7 +85,7 @@ begin
     twoPassfifo : entity work.fwft_fifo_tb
         generic map(
             G_W              => W,
-            G_LOG2DEPTH      => log2_ceil(8*1024/(W/8)) -- 8K max message FIXME set as generic/pkg constant
+            G_LOG2DEPTH      => log2_ceil(8 * G_MAX_SEGMENT_BYTES / W)
         )
         port map(
             clk              => clk,
@@ -92,5 +97,4 @@ begin
             dout_valid       => fdi_valid,
             dout_ready       => fdi_ready
         );  
-
 end architecture;
