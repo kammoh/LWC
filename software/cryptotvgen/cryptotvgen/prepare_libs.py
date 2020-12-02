@@ -87,7 +87,7 @@ def prepare_libs(sc_version, libs, candidates_dir, lib_path):
                 print(f'building sources in {src_path}')
                 if src_path.exists() and src_path.is_dir():
                     cmd = ['make', '-f',  str(ctgen_mkfile / mkfile_name),
-                        f'CRYPTO_VARIANT={vname}', f'CRYPTO_TYPE={vtype}', 'CANDIDATE_PATH=.',
+                        f'CRYPTO_VARIANT={vname}', f'CRYPTO_TYPE={vtype}', f'CANDIDATE_PATH=.',
                         f'IMPL_SRC_DIR={src_dir}']
                     if lib_path:
                         print(f"binaries will be available in lib_path={lib_path}")

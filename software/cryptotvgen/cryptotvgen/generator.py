@@ -1146,7 +1146,7 @@ def gen_tv_and_write_files(opts, dataset):
             f.write('###EOF\n')
 
 
-def determine_params(opts):
+def determine_params(opts, candidates_dir):
     '''This utility function will read in the parameters of the reference
     implementation api.h file and update the opts dict
     '''
@@ -1159,9 +1159,11 @@ def determine_params(opts):
         alg = opts.get(op)
         if not alg:
             continue
-        api_h_files = list((ctgen_get_supercop_dir() / f'crypto_{op}' / alg).glob('**/api.h'))
+        impl_path = candidates_dir / f'crypto_{op}' / alg
+        api_h_files = list(impl_path.glob('**/api.h'))
         if not api_h_files or len(api_h_files) < 1:
-            log.warning("No api.h files found in the implementation directory. Make sure --aead and/or --candidates_dir/--libs_dir are correct.")
+            log.warning(f"No api.h files found in {impl_path}. Make sure --aead and/or --candidates_dir/--libs_dir are correct.")
+            print(f"No api.h files found in {impl_path}. Make sure --aead and/or --candidates_dir/--libs_dir are correct.")
             return
         if len(api_h_files) > 1:
             log.warning("multiple api.h files found in the implementation folder.")
