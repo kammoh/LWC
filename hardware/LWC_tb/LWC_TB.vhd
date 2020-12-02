@@ -85,6 +85,14 @@ architecture TB of LWC_TB is
     signal do_ready             : std_logic := '0';
     signal do_ready_delayed     : std_logic := '0';
 
+    --! fdi/o
+    signal fdi_data             : std_logic_vector(W-1 downto 0);
+    signal fdo_data             : std_logic_vector(W-1 downto 0);
+    signal fdi_valid            : std_logic;
+    signal fdo_valid            : std_logic;
+    signal fdi_ready            : std_logic;
+    signal fdo_ready            : std_logic;
+
     --! Verification signals
     signal stall_msg            : std_logic := '0';
     
@@ -146,8 +154,6 @@ architecture TB of LWC_TB is
             do_last   : out std_logic
         );
     end component LWC;
-
-    -- for all: LWC use entity work.LWC_wrapper;
     
 begin
 
@@ -164,21 +170,22 @@ begin
     end process genClk;
     
     -- LWC is instantiated as a component for mixed languages simulation
+  
     uut: LWC
-        port map(
-            clk          => clk,
-            rst          => rst,
-            pdi_data     => pdi_data_delayed,
-            pdi_valid    => pdi_valid_delayed,
-            pdi_ready    => pdi_ready,
-            sdi_data     => sdi_data_delayed,
-            sdi_valid    => sdi_valid_delayed,
-            sdi_ready    => sdi_ready,
-            do_data      => do_data,
-            do_ready     => do_ready_delayed,
-            do_valid     => do_valid,
-            do_last      => do_last
-        );
+    port map(
+        clk          => clk,
+        rst          => rst,
+        pdi_data     => pdi_data_delayed,
+        pdi_valid    => pdi_valid_delayed,
+        pdi_ready    => pdi_ready,
+        sdi_data     => sdi_data_delayed,
+        sdi_valid    => sdi_valid_delayed,
+        sdi_ready    => sdi_ready,
+        do_data      => do_data,
+        do_ready     => do_ready_delayed,
+        do_valid     => do_valid,
+        do_last      => do_last
+    );
     
     pdi_data_delayed  <= transport pdi_data  after input_delay;
     pdi_valid_delayed <= transport pdi_valid after input_delay;

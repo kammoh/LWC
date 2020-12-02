@@ -1,16 +1,11 @@
 -------------------------------------------------------------------------------
 --! @file       LWC_TB_pkg.vhd
---! @brief      Minimalistic std_logic_1164 compatibility package for LWC_TB
---!             Provides implementations for TO_HSTRING TO_HSTRING which are only
---!                 standardized since on VHDL 2008, while avoiding namespace clashes.
+--! @brief      Testbench Utility Package
 --! @project    LWC Hardware API Testbench
---! @author     David Bishop <dbishop@vhdl.org> <dbishopx@gmail.com>
---!                  adopted by: Kamyar Mohajerani <kamyar@ieee.org>
+--!                  
 --! @copyright  
 --! @version    1.0
 --! @license    
---! @note       Based on 'std_logic_1164_additions.vhd'
---!                 retrieved from https://github.com/FPHDL/fphdl
 -------------------------------------------------------------------------------
 
 library ieee;
@@ -25,6 +20,7 @@ package LWC_TB_pkg is
   procedure seed(s : in positive);
   procedure seed(s1, s2 : in positive);
   impure function randint(min, max : integer) return integer;
+  function log2_ceil (N : NATURAL) RETURN NATURAL;
 end package LWC_TB_pkg;
 
 package body LWC_TB_pkg is
@@ -216,5 +212,20 @@ package body LWC_TB_pkg is
   begin
     return integer(trunc(real(max - min + 1) * random)) + min;
   end function;
+
+  FUNCTION log2_ceil (N : NATURAL) RETURN NATURAL IS
+  BEGIN
+      IF (N = 0) THEN
+          RETURN 0;
+      ELSIF N <= 2 THEN
+          RETURN 1;
+      ELSE
+          IF (N MOD 2 = 0) THEN
+              RETURN 1 + log2_ceil(N/2);
+          ELSE
+              RETURN 1 + log2_ceil((N + 1)/2);
+          END IF;
+      END IF;
+  END FUNCTION log2_ceil;
 
 end package body LWC_TB_pkg;

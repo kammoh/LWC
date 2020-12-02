@@ -34,11 +34,30 @@ architecture RTL of LWC_wrapper is
     
     signal do_datalast_i : std_logic_vector(W downto 0);
     signal do_datalast_o : std_logic_vector(W downto 0);
+
+    component LWC
+    port(
+        clk       : in  std_logic;
+        rst       : in  std_logic;
+        pdi_data  : in  std_logic_vector(W - 1 downto 0);
+        pdi_valid : in  std_logic;
+        pdi_ready : out std_logic;
+        sdi_data  : in  std_logic_vector(SW - 1 downto 0);
+        sdi_valid : in  std_logic;
+        sdi_ready : out std_logic;
+        do_data   : out std_logic_vector(W - 1 downto 0);
+        do_ready  : in  std_logic;
+        do_valid  : out std_logic;
+        do_last   : out std_logic
+    );
+    end component LWC;
+
+    -- for all: LWC use entity work.xyz_LWC;
 begin
 
     assert False report "Using LWC_wrapper" severity warning;
     
-    LWC_inst : entity work.LWC
+    LWC_inst : LWC
         port map(
             clk       => clk,
             rst       => rst,
